@@ -3,28 +3,349 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的第一個網站</title>
+    <title>這是我的第一個網站</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f8fafc;
-            color: #1e293b;
+            overflow: hidden;
+            background: #090a16;
+            color: #ffffff;
+            position: relative;
         }
+
+        /* 炫彩動態流動背景 */
+        .gradient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #180539, #0c1240, #042a3e, #290849, #4c114f);
+            background-size: 400% 400%;
+            animation: gradientShift 14s ease infinite;
+            z-index: 0;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 夢幻浮動彩光球 */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            pointer-events: none;
+            mix-blend-mode: screen;
+            animation: floatAround 18s infinite alternate ease-in-out;
+            z-index: 1;
+        }
+
+        .orb-1 {
+            width: 480px;
+            height: 480px;
+            background: radial-gradient(circle, #ff007f, #7928ca);
+            top: -10%;
+            left: -10%;
+            animation-duration: 16s;
+        }
+
+        .orb-2 {
+            width: 520px;
+            height: 520px;
+            background: radial-gradient(circle, #00f2fe, #4facfe);
+            bottom: -15%;
+            right: -10%;
+            animation-duration: 20s;
+            animation-delay: -5s;
+        }
+
+        .orb-3 {
+            width: 380px;
+            height: 380px;
+            background: radial-gradient(circle, #fa709a, #fee140);
+            top: 40%;
+            left: 60%;
+            animation-duration: 14s;
+            animation-delay: -8s;
+        }
+
+        .orb-4 {
+            width: 420px;
+            height: 420px;
+            background: radial-gradient(circle, #00ff87, #60efff);
+            bottom: 20%;
+            left: 10%;
+            animation-duration: 22s;
+            animation-delay: -11s;
+        }
+
+        @keyframes floatAround {
+            0% {
+                transform: translate(0, 0) scale(1) rotate(0deg);
+            }
+            33% {
+                transform: translate(120px, 80px) scale(1.15) rotate(60deg);
+            }
+            66% {
+                transform: translate(-80px, 140px) scale(0.9) rotate(180deg);
+            }
+            100% {
+                transform: translate(90px, -60px) scale(1.1) rotate(360deg);
+            }
+        }
+
+        /* 粒子畫布 */
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* 磨砂玻璃科技卡片 */
+        .glass-card {
+            position: relative;
+            z-index: 10;
+            padding: 3.5rem 4rem;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border-radius: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            box-shadow: 
+                0 20px 50px rgba(0, 0, 0, 0.4),
+                0 0 40px rgba(138, 43, 226, 0.2),
+                inset 0 1px 1px rgba(255, 255, 255, 0.3);
+            text-align: center;
+            max-width: 680px;
+            width: 90%;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 
+                0 30px 60px rgba(0, 0, 0, 0.5),
+                0 0 60px rgba(0, 242, 254, 0.35),
+                inset 0 1px 1px rgba(255, 255, 255, 0.4);
+        }
+
+        /* 頂部發光標籤 */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            margin-bottom: 1.6rem;
+            color: #d1d5db;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            animation: pulseBadge 3s infinite ease-in-out;
+        }
+
+        @keyframes pulseBadge {
+            0%, 100% { opacity: 0.85; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.04); }
+        }
+
+        /* 炫彩動態漸變標題文字 */
         h1 {
-            font-size: 2rem;
-            padding: 1.5rem 2.5rem;
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+            line-height: 1.25;
+            background: linear-gradient(
+                90deg, 
+                #ff7170, 
+                #ffe57f, 
+                #80ffea, 
+                #8aff80, 
+                #cf70ff, 
+                #ff7170
+            );
+            background-size: 300% auto;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: shineText 6s linear infinite;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 4px 15px rgba(255, 113, 112, 0.3));
+        }
+
+        @keyframes shineText {
+            to { background-position: 300% center; }
+        }
+
+        p.description {
+            font-size: 1.15rem;
+            color: #94a3b8;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            line-height: 1.6;
+        }
+
+        /* 互動提示鈕 */
+        .interactive-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00ff87;
+            box-shadow: 0 0 10px #00ff87;
+        }
+
+        @media (max-width: 640px) {
+            .glass-card {
+                padding: 2.5rem 1.8rem;
+            }
+            h1 {
+                font-size: 2.1rem;
+            }
+            p.description {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>這是我的第一個網站</h1>
+    <!-- 動態漸變基底 -->
+    <div class="gradient-bg"></div>
+
+    <!-- 浮動霓虹彩光球 -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+
+    <!-- 背景粒子畫布 -->
+    <canvas id="particles"></canvas>
+
+    <!-- 核心磨砂玻璃卡片 -->
+    <main class="glass-card">
+        <div class="badge">
+            <span class="interactive-dot"></span>
+            探索數位無限可能
+        </div>
+        <h1>這是我的第一個網站</h1>
+        <p class="description">
+            流動色彩 · 星空粒子 · 創意與程式的奇妙起點 ✨
+        </p>
+    </main>
+
+    <script>
+        // 互動星空微光粒子
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+
+        let particlesArray = [];
+        let mouse = { x: null, y: null, radius: 120 };
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initParticles();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+        });
+
+        window.addEventListener('mouseleave', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2.2 + 0.6;
+                this.speedX = (Math.random() - 0.5) * 0.7;
+                this.speedY = (Math.random() - 0.5) * 0.7;
+                this.color = `hsl(${Math.random() * 60 + 180}, 90%, 75%)`; // 藍/青/紫微光
+                this.alpha = Math.random() * 0.7 + 0.3;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 8;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x < 0) this.x = canvas.width;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.y < 0) this.y = canvas.height;
+                if (this.y > canvas.height) this.y = 0;
+
+                // 滑鼠互動推開微動
+                if (mouse.x !== null && mouse.y !== null) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < mouse.radius) {
+                        let force = (mouse.radius - distance) / mouse.radius;
+                        this.x -= (dx / distance) * force * 3;
+                        this.y -= (dy / distance) * force * 3;
+                    }
+                }
+            }
+        }
+
+        function initParticles() {
+            particlesArray = [];
+            const count = Math.floor((canvas.width * canvas.height) / 12000);
+            for (let i = 0; i < count; i++) {
+                particlesArray.push(new Particle());
+            }
+        }
+        initParticles();
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
 </body>
 </html>
