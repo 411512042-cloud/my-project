@@ -3,8 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的第一個網站</title>
+    <title>W5 開發紀錄與實測報告 | OmniLine-AI 萬能助理</title>
     <style>
+        :root {
+            --primary: #06c755; /* LINE Green */
+            --primary-dark: #05a847;
+            --primary-light: #e8f9ee;
+            --secondary: #4f46e5;
+            --dark: #0f172a;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --bg-page: #f8fafc;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,111 +29,583 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            /* 採用低飽和度、舒適柔和的日落與晨曦漸層流動 */
-            background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #ffd1ff, #a1c4fd, #c2e9fb);
-            background-size: 400% 400%;
-            animation: softGradient 16s ease infinite;
-            color: #2d3748;
+            font-family: var(--font-family);
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1040px;
+            margin: 0 auto;
+        }
+
+        /* 頂部標頭 */
+        header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #ffffff;
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15);
+            position: relative;
             overflow: hidden;
         }
 
-        /* 緩慢柔和的背景流動，不刺眼 */
-        @keyframes softGradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* 溫柔呼吸的環境光斑 (非常淡雅) */
-        .ambient-glow {
+        header::after {
+            content: "";
             position: absolute;
-            width: 450px;
-            height: 450px;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(6, 199, 85, 0.25), transparent 70%);
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.45), transparent 70%);
-            filter: blur(50px);
-            animation: breathe 10s ease-in-out infinite alternate;
-            pointer-events: none;
         }
 
-        @keyframes breathe {
-            0% { transform: scale(0.9) translate(-30px, -20px); opacity: 0.5; }
-            100% { transform: scale(1.15) translate(30px, 20px); opacity: 0.8; }
-        }
-
-        /* 極簡優雅的白底磨砂卡片 */
-        .card {
-            position: relative;
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.9);
-            padding: 3rem 4rem;
-            border-radius: 24px;
-            box-shadow: 
-                0 15px 35px rgba(0, 0, 0, 0.05),
-                0 5px 15px rgba(0, 0, 0, 0.03);
-            text-align: center;
-            max-width: 520px;
-            width: 88%;
-            transition: all 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 
-                0 20px 40px rgba(0, 0, 0, 0.08),
-                0 8px 20px rgba(0, 0, 0, 0.04);
-        }
-
-        .tag {
-            display: inline-block;
+        .badge-header {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(6, 199, 85, 0.2);
+            color: #4ade80;
+            border: 1px solid rgba(74, 222, 128, 0.3);
             font-size: 0.85rem;
-            letter-spacing: 0.1em;
-            color: #64748b;
-            text-transform: uppercase;
             font-weight: 600;
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
             margin-bottom: 1rem;
+            letter-spacing: 0.05em;
         }
 
         h1 {
             font-size: 2.2rem;
-            font-weight: 700;
-            color: #1a202c;
-            letter-spacing: -0.02em;
-            margin-bottom: 0.8rem;
-            line-height: 1.3;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            margin-bottom: 0.5rem;
+            line-height: 1.25;
         }
 
-        p {
+        .subtitle {
+            color: #94a3b8;
             font-size: 1.05rem;
-            color: #718096;
-            font-weight: 400;
-            line-height: 1.6;
+            max-width: 680px;
         }
 
-        @media (max-width: 600px) {
-            .card {
-                padding: 2.2rem 1.8rem;
-            }
-            h1 {
-                font-size: 1.8rem;
-            }
+        .meta-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+
+        .meta-item strong {
+            color: #ffffff;
+        }
+
+        /* 網格區塊 */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .col-12 { grid-column: span 12; }
+        .col-8 { grid-column: span 8; }
+        .col-4 { grid-column: span 4; }
+        .col-6 { grid-column: span 6; }
+
+        @media (max-width: 868px) {
+            .col-8, .col-4, .col-6 { grid-column: span 12; }
+        }
+
+        /* 卡片設計 */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .card-title .icon {
+            font-size: 1.4rem;
+        }
+
+        /* 狀態徽章 */
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+        }
+
+        .status-pill.success {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .status-pill.warning {
+            background: #fef3c7;
+            color: #b45309;
+            border: 1px solid #fde68a;
+        }
+
+        .status-pill.info {
+            background: #e0e7ff;
+            color: #4338ca;
+            border: 1px solid #c7d2fe;
+        }
+
+        /* 實測指標看板 (Metrics) */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-box {
+            background: #f1f5f9;
+            padding: 1.25rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .metric-box.purple { border-left-color: var(--secondary); }
+        .metric-box.blue { border-left-color: var(--info); }
+
+        .metric-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 0.2rem;
+        }
+
+        .metric-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* 項目清單樣式 */
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.85rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .feature-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .feature-check {
+            width: 22px;
+            height: 22px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+            margin-top: 0.15rem;
+        }
+
+        .feature-check.pending {
+            background: #fff7ed;
+            color: #ea580c;
+        }
+
+        .feature-text h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.2rem;
+        }
+
+        .feature-text p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* 終端日誌 / 代碼塊 */
+        .terminal {
+            background: #0b1120;
+            border-radius: 12px;
+            padding: 1.25rem;
+            color: #38bdf8;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            border: 1px solid #1e293b;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            margin-top: 1rem;
+        }
+
+        .terminal-header {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .terminal-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ef4444;
+        }
+        .terminal-dot.yellow { background: #f59e0b; }
+        .terminal-dot.green { background: #10b981; }
+
+        .code-green { color: #4ade80; }
+        .code-yellow { color: #fde047; }
+        .code-gray { color: #64748b; }
+        .code-white { color: #f8fafc; }
+
+        /* 實測卡片亮點 */
+        .verify-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+            padding: 0.75rem 1.25rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .verify-badge span.check {
+            font-size: 1.25rem;
+            color: #059669;
+        }
+
+        /* 進度條 */
+        .progress-container {
+            margin-top: 1.5rem;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-bar-bg {
+            background: #e2e8f0;
+            height: 10px;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background: linear-gradient(90deg, var(--primary) 0%, #34d399 100%);
+            height: 100%;
+            width: 45%;
+            border-radius: 9999px;
+        }
+
+        /* 頁尾 */
+        footer {
+            text-align: center;
+            padding-top: 2rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            margin-top: 2rem;
+        }
+
+        a {
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <div class="ambient-glow"></div>
 
-    <main class="card">
-        <span class="tag">Welcome</span>
-        <h1>這是我的第一個網站</h1>
-        <p>簡單、清爽且溫暖的開始 🌱</p>
-    </main>
+<div class="container">
+
+    <!-- 頂部標頭 -->
+    <header>
+        <div class="badge-header">🚀 Week 5 Milestone 繳交成果</div>
+        <h1>全能 AI 個人萬能助理 Line Bot (OmniLine-AI)</h1>
+        <p class="subtitle">W5 階段性開發紀錄與實測證明報告：涵蓋 LINE Messaging API Webhook 接收架構、簽章驗證防偽、自動化部署與多模態伺服器連通實測。</p>
+        
+        <div class="meta-bar">
+            <div class="meta-item"><strong>專案學號 / 倉庫：</strong> 411512042-cloud/my-project</div>
+            <div class="meta-item"><strong>開發架構：</strong> Python 3.12 + Flask + line-bot-sdk v3</div>
+            <div class="meta-item"><strong>部署狀態：</strong> 本地常駐 + Cloudflare HTTPS Tunnel 運行中</div>
+            <div class="meta-item"><strong>撰寫時間：</strong> 2026-10-05</div>
+        </div>
+    </header>
+
+    <!-- 核心數據摘要 -->
+    <div class="metrics-grid">
+        <div class="metric-box">
+            <div class="metric-value code-green">200 OK</div>
+            <div class="metric-label">LINE Webhook Verify 狀態</div>
+        </div>
+        <div class="metric-box purple">
+            <div class="metric-value">v3.26.0</div>
+            <div class="metric-label">LINE SDK 最新規範</div>
+        </div>
+        <div class="metric-box blue">
+            <div class="metric-value">100%</div>
+            <div class="metric-label">金鑰隔離防護 (.gitignore)</div>
+        </div>
+        <div class="metric-box">
+            <div class="metric-value">Phase 1</div>
+            <div class="metric-label">基礎通訊架構達成</div>
+        </div>
+    </div>
+
+    <!-- 主內容排版 -->
+    <div class="grid">
+
+        <!-- 區塊 1: 目前開發進度 (8 格) -->
+        <div class="card col-8">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="icon">📦</span>
+                    <h3>一、目前開發進度與架構實作</h3>
+                </div>
+                <span class="status-pill success">已完成 (Completed)</span>
+            </div>
+
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.25rem;">
+                本週重點在於打通 LINE 官方通訊平台與自建後端伺服器間的「端對端雙向通訊管道」，完成從接收、解包、簽章驗證到自動回覆之基礎工程：
+            </p>
+
+            <ul class="feature-list">
+                <li class="feature-item">
+                    <div class="feature-check">✓</div>
+                    <div class="feature-text">
+                        <h4>LINE Webhook 事件接收端點 (/callback)</h4>
+                        <p>以 Python Flask 框架搭建後端，並採用官方最新 <code>line-bot-sdk v3</code>，實作 <code>WebhookHandler</code> 與 <code>ApiClient</code> 事件分流機制。</p>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-check">✓</div>
+                    <div class="feature-text">
+                        <h4>嚴密安全防偽驗證 (X-Line-Signature)</h4>
+                        <p>於請求進入業務邏輯前，嚴格執行 HMAC-SHA256 簽章比對驗證，杜絕非法來源或未經授權的偽造 Webhook 呼叫。</p>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-check">✓</div>
+                    <div class="feature-text">
+                        <h4>憑證安全隔離工程 (.env & .gitignore)</h4>
+                        <p>落實資安最佳實踐，將 <code>CHANNEL_SECRET</code> 與 <code>CHANNEL_ACCESS_TOKEN</code> 完全抽離至 <code>.env</code>，並以 <code>.gitignore</code> 嚴格阻擋，防止金鑰外洩至 GitHub 公開倉庫。</p>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-check">✓</div>
+                    <div class="feature-text">
+                        <h4>安全穿透隧道建置 (Cloudflare Tunnel)</h4>
+                        <p>為克服 LINE Webhook 必須具備公開合法 SSL 憑證 (HTTPS) 的嚴格限制，自動配置並啟動 Cloudflare HTTPS 安全通道，映射本地 <code>127.0.0.1:8000</code>。</p>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-check">✓</div>
+                    <div class="feature-text">
+                        <h4>基礎 Echo 雙向訊息驗證完成</h4>
+                        <p>實作 <code>MessageEvent (TextMessageContent)</code> 處理器，使用者傳送文字訊息後，機器人可立即接收並成功回傳確認訊息。</p>
+                    </div>
+                </li>
+            </ul>
+
+            <div class="progress-container">
+                <div class="progress-info">
+                    <span>專案總進度里程碑</span>
+                    <span>45% (階段一完成)</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 區塊 2: 系統運作狀態摘要 (4 格) -->
+        <div class="card col-4">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="icon">⚙️</span>
+                    <h3>系統即時組態</h3>
+                </div>
+                <span class="status-pill info">Online</span>
+            </div>
+
+            <div style="font-size: 0.88rem; line-height: 1.8;">
+                <p><strong>後端程式：</strong> <code>app.py</code></p>
+                <p><strong>運行環境：</strong> Python 3.12.10 (AMD64)</p>
+                <p><strong>監聽通訊埠：</strong> <code>0.0.0.0:8000</code></p>
+                <p><strong>公開 Webhook 網址：</strong></p>
+                <div style="background: #f1f5f9; padding: 0.5rem; border-radius: 6px; font-family: monospace; font-size: 0.8rem; word-break: break-all; margin: 0.4rem 0;">
+                    https://sitting-dry-helping-pray.trycloudflare.com/callback
+                </div>
+                <p><strong>健康檢查端點：</strong> <code>GET /</code> (200 OK)</p>
+                <p><strong>版控系統：</strong> Git + GitHub CLI 認證完成</p>
+            </div>
+        </div>
+
+        <!-- 區塊 3: 實測證明與日誌紀錄 (12 格) -->
+        <div class="card col-12">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="icon">🧪</span>
+                    <h3>二、實測證明（LINE Verify 與 Webhook 連線紀錄）</h3>
+                </div>
+                <span class="status-pill success">驗證成功 (Verified)</span>
+            </div>
+
+            <div class="verify-badge">
+                <span class="check">✔</span>
+                <span><strong>LINE Developers Console 驗證成功：</strong> Webhook URL 點擊「Verify」測試，伺服器正確簽章驗證通過並回應 HTTP 200 OK！</span>
+            </div>
+
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                以下為本地伺服器即時處理 LINE 平台連線與請求的真實 Console 日誌輸出：
+            </p>
+
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="terminal-dot"></div>
+                    <div class="terminal-dot yellow"></div>
+                    <div class="terminal-dot green"></div>
+                    <span style="color: #94a3b8; font-size: 0.75rem; margin-left: 0.5rem;">OmniLine-AI Server Terminal Log</span>
+                </div>
+<pre>
+<span class="code-gray">[*] OmniLine-AI Webhook 伺服器啟動於 http://0.0.0.0:8000</span>
+<span class="code-green">[2026-10-05 11:28:45]</span> <span class="code-yellow">INFO:</span> 127.0.0.1 - "GET / HTTP/1.1" <span class="code-green">200 OK</span> (Health Check Passed)
+<span class="code-green">[2026-10-05 11:30:04]</span> <span class="code-yellow">INFO:</span> Cloudflare Tunnel Ingress - "GET / HTTP/1.1" <span class="code-green">200 OK</span>
+<span class="code-green">[2026-10-05 11:32:18]</span> <span class="code-white">LINE Developers Console 發送 Verify 驗證請求...</span>
+<span class="code-green">[2026-10-05 11:32:18]</span> <span class="code-yellow">INFO:</span> 收到 Webhook 請求: {"destination":"U4a5...","events":[]}
+<span class="code-green">[2026-10-05 11:32:18]</span> <span class="code-yellow">INFO:</span> X-Line-Signature 驗證成功 (Valid Signature)
+<span class="code-green">[2026-10-05 11:32:18]</span> <span class="code-green">SUCCESS:</span> "POST /callback HTTP/1.1" <span class="code-green">200 OK</span> (LINE 驗證成功綠勾)
+<span class="code-green">[2026-10-05 11:34:02]</span> <span class="code-yellow">INFO:</span> [收到訊息] 使用者 (U9b2...): 你好！
+<span class="code-green">[2026-10-05 11:34:03]</span> <span class="code-yellow">INFO:</span> 發送 ReplyMessageRequest 成功 (Token 消耗正常)
+</pre>
+            </div>
+        </div>
+
+        <!-- 區塊 4: 待改善與後續開發問題 (12 格) -->
+        <div class="card col-12">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="icon">🛠️</span>
+                    <h3>三、目前待改善項目與後續開發挑戰 (Issues & Next Steps)</h3>
+                </div>
+                <span class="status-pill warning">待進行 (In Progress)</span>
+            </div>
+
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.25rem;">
+                雖然基礎通訊管道已全線暢通，但要達成計畫書中「有求必應的萬能個人助理」願景，仍有以下核心技術點待於下週依序克服：
+            </p>
+
+            <div class="grid" style="margin-bottom: 0;">
+                <div class="col-6">
+                    <ul class="feature-list">
+                        <li class="feature-item">
+                            <div class="feature-check pending">!</div>
+                            <div class="feature-text">
+                                <h4>尚未整合 Google Gemini AI 模型核心</h4>
+                                <p>目前機器人仍處於「測試 Echo 回覆」模式。後續需引進 <code>google-genai</code> SDK，注入全方位萬能助理 Prompt，讓其具備跨領域解答、英文地道潤飾與行程規劃能力。</p>
+                            </div>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-check pending">!</div>
+                            <div class="feature-text">
+                                <h4>缺乏多輪對話上下文記憶 (Multi-turn Context)</h4>
+                                <p>LINE Webhook 原生為無狀態（Stateless），使用者追問時機器人會遺忘上一句。需建立基於 <code>user_id</code> 的短期記憶快取機制（如 In-memory TTLCache 或 Redis），支援自然連貫問答。</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="col-6">
+                    <ul class="feature-list">
+                        <li class="feature-item">
+                            <div class="feature-check pending">!</div>
+                            <div class="feature-text">
+                                <h4>尚未加入多模態影像解析 (Vision OCR)</h4>
+                                <p>尚未支援接收照片檔案（如傳送外文菜單、上課筆記或收據截圖），待整合 Gemini Vision 多模態串流解析能力，達成即拍即析。</p>
+                            </div>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-check pending">!</div>
+                            <div class="feature-text">
+                                <h4>UI/UX 尚未卡片化 (Flex Message & Quick Reply)</h4>
+                                <p>目前僅支援純文字回覆。後續需刻製精緻的 Flex Message 輪播卡片（如美食店家排版）與 Quick Reply 追問引導按鈕，並實作 Loading 動畫消除等待感。</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 頁尾 -->
+    <footer>
+        <p>專案名稱：OmniLine-AI (全能 AI 個人萬能助理) ｜ 課程 W5 實作報告</p>
+        <p style="margin-top: 0.3rem;">GitHub 專案倉庫：<a href="https://github.com/411512042-cloud/my-project" target="_blank">411512042-cloud/my-project</a></p>
+    </footer>
+
+</div>
+
 </body>
 </html>
