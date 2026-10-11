@@ -589,9 +589,9 @@
             <div class="card-header">
                 <div class="card-title">
                     <span class="icon">🧪</span>
-                    <h3>二、實測證明（LINE Webhook 驗證與 Gemini AI 對話測試）</h3>
+                    <h3>四、 伺服器部署、實測與成果展示</h3>
                 </div>
-                <span class="status-pill success">實測驗證通過 (Verified)</span>
+                <span class="status-pill success">第一版 (V1) 實測紀錄</span>
             </div>
 
             <div class="grid" style="margin-bottom: 0;">
@@ -630,49 +630,74 @@
                     </div>
                 </div>
 
-                <!-- 模擬聊天室介面 -->
                 <div class="col-6">
-                    <p style="color: var(--dark); font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem;">
-                        📱 LINE 聊天室真實多輪問答模擬：
-                    </p>
-                    <div class="chat-preview">
-                        <!-- 第一輪 -->
-                        <div class="chat-row user">
-                            <div class="bubble user">推薦台北車站附近適合工作的平價咖啡廳，要有插座的</div>
-                        </div>
-                        <div class="chat-row bot">
-                            <div class="bubble bot">
-                                沒問題！為您推薦兩間高評價且適合工作的咖啡廳：<br><br>
-                                <strong>1. 鬧咖啡 NOW coffee</strong><br>
-                                • 特色：老宅工業風、空間寬敞不限時<br>
-                                • 插座：大部分座位皆有提供 🔌<br>
-                                • 價位：美式約 120 元<br><br>
-                                <strong>2. 奧蘿茉 CAFE 北車店</strong><br>
-                                • 特色：多樓層座位充足、平價首選<br>
-                                • 插座：插座數量極多
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem;">
+                        <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">📋 第一版 (V1) 部署與實測現況分析</h4>
+                        <p style="font-size: 0.88rem; color: #475569; line-height: 1.7; margin-bottom: 0.75rem;">
+                            V1 成功完成基礎環境配置、Webhook 驗證、多輪對話與 Quick Reply 功能，但在真機實測中，暴露了數個關鍵待改善問題，右側與下方真實截圖如實記錄了 V1 版本的實際互動表現：
+                        </p>
+                        <ul style="font-size: 0.85rem; color: #64748b; padding-left: 1.2rem; line-height: 1.8;">
+                            <li><strong>時間認知偏差：</strong>未動態校正時區，AI 將 2026 年誤認為 2023 年。</li>
+                            <li><strong>多餘罐頭訊息：</strong>官方後台自動回覆未關閉，頻繁彈出冗長說明。</li>
+                            <li><strong>缺乏多模態辨識：</strong>傳送圖片時 Bot 靜默無法解析內容。</li>
+                            <li><strong>Quick Reply 寫死範例：</strong>點擊潤飾直接送出固定字句無法自訂。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- V1 真實實測截圖展示區塊 -->
+            <div style="margin-top: 1.5rem;">
+                <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e293b; margin-bottom: 1rem;">📱 第一版 (V1) 真機實測截圖與問題紀錄：</h4>
+                <div class="grid" style="margin-bottom: 0;">
+                    <!-- 截圖 1：時間錯誤 -->
+                    <div class="col-6">
+                        <p style="font-size: 0.88rem; font-weight: 700; color: #dc2626; margin-bottom: 0.4rem;">❌ 實測截圖一：時間日期認知錯誤</p>
+                        <div style="background: #18181b; border-radius: 12px; padding: 0.75rem; border: 1px solid #3f3f46; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                            <img src="圖片/v1_test1_wrong_date.png" alt="V1 實測：時間錯誤" style="max-width:100%; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1); display:block;">
+                            <div style="margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px;">
+                                <span style="font-size: 0.8rem; color: #f87171; font-weight: 600;">
+                                    ⚠️ 問題記錄：詢問「今天幾年幾月幾號」，AI 回覆「2023 年 10 月 24 日」，出現年份與日期的嚴重偏差，且上方帶有未關閉的官方帳號罐頭訊息。
+                                </span>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- 第二輪 (追問展示多輪記憶) -->
-                        <div class="chat-row user">
-                            <div class="bubble user">那第一間從北車走過去大概多久？</div>
-                        </div>
-                        <div class="chat-row bot">
-                            <div class="bubble bot">
-                                <strong>鬧咖啡</strong> 位於延平南路：<br>
-                                • 從<strong>台北車站（地下街 Z4 或 Z8 出口）</strong>步行約 <strong>6~8 分鐘</strong> 即可抵達！<br>
-                                • 沿著重慶南路走轉進去非常方便，建議平日下午前往位子較多喔！
+                    <!-- 截圖 2：冗長廢話開場白 -->
+                    <div class="col-6">
+                        <p style="font-size: 0.88rem; font-weight: 700; color: #dc2626; margin-bottom: 0.4rem;">❌ 實測截圖二：一直出現沒必要的官方罐頭訊息</p>
+                        <div style="background: #18181b; border-radius: 12px; padding: 0.75rem; border: 1px solid #3f3f46; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                            <img src="圖片/v1_test2_boilerplate_msg.png" alt="V1 實測：冗長廢話訊息" style="max-width:100%; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1); display:block;">
+                            <div style="margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px;">
+                                <span style="font-size: 0.8rem; color: #f87171; font-weight: 600;">
+                                    ⚠️ 問題記錄：使用者每傳送一句話（如索取靈感），都會先跳出「感謝您的訊息！很抱歉，本帳號無法個別回覆...」這段沒必要的開場白，嚴重破壞互動體驗。
+                                </span>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Quick Reply 視覺模擬 -->
-                        <div style="margin-top: 0.75rem; border-top: 1px dashed #cbd5e1; padding-top: 0.5rem;">
-                            <span style="font-size: 0.75rem; color: #64748b; font-weight: 600;">快速回應按鈕 (Quick Reply)：</span>
-                            <div class="quick-replies-demo">
-                                <span class="qr-pill">💡 今日靈感</span>
-                                <span class="qr-pill">☕ 捷運咖啡廳</span>
-                                <span class="qr-pill">📝 英文潤飾</span>
-                                <span class="qr-pill">🧹 清除記憶</span>
+                    <!-- 截圖 3：無法辨識圖片 -->
+                    <div class="col-6">
+                        <p style="font-size: 0.88rem; font-weight: 700; color: #dc2626; margin-bottom: 0.4rem;">❌ 實測截圖三：無法辨識圖片內容</p>
+                        <div style="background: #18181b; border-radius: 12px; padding: 0.75rem; border: 1px solid #3f3f46; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                            <img src="圖片/v1_test3_vision_fail.png" alt="V1 實測：無法辨識圖片" style="max-width:100%; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1); display:block;">
+                            <div style="margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px;">
+                                <span style="font-size: 0.8rem; color: #f87171; font-weight: 600;">
+                                    ⚠️ 問題記錄：傳送尼泊爾手工麻布標籤特寫照片時，Bot 缺乏 ImageMessageContent 處理邏輯，僅觸發自動回覆罐頭訊息，完全無法進行 OCR 辨識與翻譯。
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 截圖 4：Quick Reply 重複出現固定文字 -->
+                    <div class="col-6">
+                        <p style="font-size: 0.88rem; font-weight: 700; color: #dc2626; margin-bottom: 0.4rem;">❌ 實測截圖四：快捷按鈕重複傳送固定寫死文字</p>
+                        <div style="background: #18181b; border-radius: 12px; padding: 0.75rem; border: 1px solid #3f3f46; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                            <img src="圖片/v1_test4_fixed_qr.png" alt="V1 實測：快捷按鈕固定字句" style="max-width:100%; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1); display:block;">
+                            <div style="margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px;">
+                                <span style="font-size: 0.8rem; color: #f87171; font-weight: 600;">
+                                    ⚠️ 問題記錄：只要按下「📝 英文潤飾」快捷按鈕，就會重複傳送寫死的固定範例句「幫我把這句改得更地道：I want to know your idea.」，使用者無法輸入自己的自訂句子。
+                                </span>
                             </div>
                         </div>
                     </div>
