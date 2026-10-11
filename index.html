@@ -991,100 +991,54 @@ SYSTEM_INSTRUCTION = <span class="code-purple">"""
             <!-- 實測對話展示 -->
             <div class="grid" style="margin-top: 1rem; margin-bottom: 0;">
 
-                <!-- 測試 1：文字精練 -->
+                <!-- 測試 1：正確時間與消除廢話 -->
                 <div class="col-6">
-                    <p style="font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">🧪 測試一：回覆精練（廢話消除確認）</p>
-                    <div class="chat-preview">
-                        <div class="chat-row user">
-                            <div class="bubble user">現在台灣是幾年幾月幾日？星期幾？</div>
-                        </div>
-                        <div class="chat-row bot">
-                            <div class="bubble bot">
-                                2026 年 10 月 11 日，星期日。<br>
-                                現在台灣標準時間（UTC+8）是晚上 19:41。
-                            </div>
-                        </div>
-                        <div style="font-size: 0.75rem; color: #10b981; margin-top: 0.4rem; font-weight: 600;">
-                            ✅ V2 確認：無廢話開場、時間完全準確
+                    <p style="font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">🧪 實測一：精準時間與消除冗長廢話（今天日期）</p>
+                    <div style="background: #18181b; border-radius: 12px; padding: 0.75rem; border: 1px solid #3f3f46; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        <img src="images/v2_test1_date.png" alt="LINE 實測：今天日期與消除廢話" style="width: 100%; border-radius: 8px; display: block; object-fit: contain;">
+                        <div style="margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 6px;">
+                            <span style="font-size: 0.8rem; color: #34d399; font-weight: 600;">
+                                ✅ 實測驗證：詢問「今天日期」，Bot 零廢話直接回覆「今天是 2026年10月11日 星期日 📅」，精準度 100% 且徹底消除客服開場白！
+                            </span>
                         </div>
                     </div>
                 </div>
 
-                <!-- 測試 2：Quick Reply 英文潤飾改善 -->
+                <!-- 測試 2：英文潤飾引導輸入 -->
                 <div class="col-6">
-                    <p style="font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">🧪 測試二：英文潤飾 Quick Reply 引導機制</p>
-                    <div class="chat-preview">
-                        <div class="chat-row bot">
-                            <div class="bubble bot">
-                                [點下「📝 英文潤飾」按鈕後 Bot 回覆：]<br><br>
-                                請在冒號後面輸入您想修改的英文句子再發送給我！例如：<br>
-                                <em>請幫我潤飾英文句子：I want to schedule a meeting with you tomorrow.</em>
-                            </div>
-                        </div>
-                        <div class="chat-row user">
-                            <div class="bubble user">請幫我潤飾英文句子：I want to know if you are free tomorrow to discuss the project.</div>
-                        </div>
-                        <div class="chat-row bot">
-                            <div class="bubble bot">
-                                <strong>商務正式版：</strong><br>
-                                "I would like to inquire about your availability tomorrow to discuss the project."<br><br>
-                                <strong>自然口語版：</strong><br>
-                                "Are you free tomorrow to talk about the project?"<br><br>
-                                📌 修訂重點：正式版以 "inquire about your availability" 取代直接詢問；口語版更簡潔自然。
-                            </div>
-                        </div>
-                        <div style="font-size: 0.75rem; color: #10b981; margin-top: 0.4rem; font-weight: 600;">
-                            ✅ V2 確認：引導機制正常，使用者可自由輸入句子
+                    <p style="font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">🧪 實測二：Quick Reply 英文潤飾（自訂輸入句實測）</p>
+                    <div style="background: #18181b; border-radius: 12px; padding: 0.75rem; border: 1px solid #3f3f46; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        <img src="images/v2_test2_english.png" alt="LINE 實測：英文潤飾雙版本與原因剖析" style="width: 100%; border-radius: 8px; display: block; object-fit: contain;">
+                        <div style="margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 6px;">
+                            <span style="font-size: 0.8rem; color: #34d399; font-weight: 600;">
+                                ✅ 實測驗證：使用者可傳送任意自訂句子，Bot 同時輸出「商務正式版」與「自然口語版 (back up and running)」，並給出地道片語剖析！
+                            </span>
                         </div>
                     </div>
                 </div>
 
-                <!-- 測試 3：Vision OCR 圖片辨識 -->
+                <!-- 測試 3：Vision OCR 圖片辨識與外文翻譯 -->
                 <div class="col-6">
-                    <p style="font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">🧪 測試三：圖片辨識（Vision OCR 即拍即析）</p>
-                    <div class="chat-preview">
-                        <div class="chat-row user">
-                            <div class="bubble user">📷 [傳送一張日文商品說明標籤照片]</div>
-                        </div>
-                        <div class="chat-row bot">
-                            <div class="bubble bot">
-                                <strong>【影像主旨】</strong> 日本零食商品包裝正面與成分說明標籤。<br><br>
-                                <strong>【文字提取與翻譯】</strong><br>
-                                • 名稱：じゃがポックル → <strong>薯條先生（北海道限定）</strong><br>
-                                • 原材料：ばれいしょ → 馬鈴薯；植物油脂 → 植物油；食塩 → 食鹽<br>
-                                • 保存方法：直射日光・高温多湿の場所を避けて → 避免陽光直射與高溫潮濕環境<br><br>
-                                <strong>【重點摘要】</strong><br>
-                                • 北海道限定薯條零食，主成分為馬鈴薯<br>
-                                • 保存期限：製造日から180日 → 出廠後 180 天內食用
-                            </div>
-                        </div>
-                        <div style="font-size: 0.75rem; color: #10b981; margin-top: 0.4rem; font-weight: 600;">
-                            ✅ V2 確認：Vision OCR 正常辨識，外文自動翻譯為繁體中文
+                    <p style="font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">🧪 實測三：Gemini Vision 多模態圖片辨識與即時 OCR 翻譯</p>
+                    <div style="background: #18181b; border-radius: 12px; padding: 0.75rem; border: 1px solid #3f3f46; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        <img src="images/v2_test3_vision.png" alt="LINE 實測：尼泊爾麻布標籤圖片辨識與翻譯" style="width: 100%; border-radius: 8px; display: block; object-fit: contain;">
+                        <div style="margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 6px;">
+                            <span style="font-size: 0.8rem; color: #34d399; font-weight: 600;">
+                                ✅ 實測驗證：傳送尼泊爾布標照片，Bot 自動擷取 HIMALAYAN / HEMP / THC FREE 等文字，並結構化條列【影像主旨】、【文字翻譯】與【重點摘要】！
+                            </span>
                         </div>
                     </div>
                 </div>
 
-                <!-- 測試 4：捷運咖啡廳防幻覺 -->
+                <!-- 測試 4：捷運咖啡廳防幻覺推薦 -->
                 <div class="col-6">
-                    <p style="font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">🧪 測試四：捷運咖啡廳防幻覺約束確認</p>
-                    <div class="chat-preview">
-                        <div class="chat-row user">
-                            <div class="bubble user">推薦台北捷運周邊真實平價工作咖啡廳（含插座與站名）</div>
-                        </div>
-                        <div class="chat-row bot">
-                            <div class="bubble bot">
-                                以下為台北捷運周邊真實存在的平價咖啡廳推薦：<br><br>
-                                <strong>1. 路易莎咖啡 台大公館店</strong><br>
-                                • 捷運：公館站 4 號出口 步行 2 分鐘<br>
-                                • 插座：✅ 充足　價位：美式約 60 元起<br><br>
-                                <strong>2. cama café 忠孝敦化店</strong><br>
-                                • 捷運：忠孝敦化站 4 號出口 步行 1 分鐘<br>
-                                • 插座：✅ 部分座位有　價位：約 65–90 元<br><br>
-                                ⚠️ 以上為確認存在的真實店家，建議前往前再行確認營業時間。
-                            </div>
-                        </div>
-                        <div style="font-size: 0.75rem; color: #10b981; margin-top: 0.4rem; font-weight: 600;">
-                            ✅ V2 確認：防幻覺機制正常，且誠實標注建議確認
+                    <p style="font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">🧪 實測四：台北捷運咖啡廳（真實實體店家與防幻覺約束）</p>
+                    <div style="background: #18181b; border-radius: 12px; padding: 0.75rem; border: 1px solid #3f3f46; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        <img src="images/v2_test4_cafe.png" alt="LINE 實測：捷運周邊真實工作咖啡廳推薦" style="width: 100%; border-radius: 8px; display: block; object-fit: contain;">
+                        <div style="margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 6px;">
+                            <span style="font-size: 0.8rem; color: #34d399; font-weight: 600;">
+                                ✅ 實測驗證：成功推薦真實店家（COFFEE DPT 忠孝敦化站、Fika Fika Cafe 松江南京站、不只是圖書館 市政府站），含精準出口、步行時間、插座與價位資訊！
+                            </span>
                         </div>
                     </div>
                 </div>
