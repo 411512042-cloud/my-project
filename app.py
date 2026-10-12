@@ -20,7 +20,8 @@ from linebot.v3.messaging import (
     TextMessage,
     QuickReply,
     QuickReplyItem,
-    MessageAction
+    MessageAction,
+    ShowLoadingAnimationRequest
 )
 from linebot.v3.webhooks import (
     MessageEvent,
@@ -28,28 +29,39 @@ from linebot.v3.webhooks import (
     ImageMessageContent
 )
 
-# 引用 Google GenAI 官方 SDK
+# 引用 Google GenAI 官方 SDK (用於 Vision 與備用備援)
 from google import genai
 from google.genai import types
+
+# 引用 OpenAI 兼容 SDK (用於 OpenCode / 本地模型 API)
+from openai import OpenAI
+
+# 引用自研即時網路搜尋服務
+from search_service import search_engine, should_trigger_search, format_search_context
 
 # 設定 Logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
+# ===================================================
 # 讀取環境變數
+# ===================================================
 CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET")
 CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+# OpenCode / 本地模型設定
+AI_PROVIDER = os.getenv("AI_PROVIDER", "opencode").lower()
+OPENCODE_API_KEY = os.getenv("OPENCODE_API_KEY")
+OPENCODE_BASE_URL = os.getenv("OPENCODE_BASE_URL", "https://opencode.ai/zen/v1")
+OPENCODE_MODEL_NAME = os.getenv("OPENCODE_MODEL_NAME", "deepseek-chat")
+
 PORT = int(os.getenv("PORT", 8000))
 DEBUG = os.getenv("FLASK_DEBUG", "True").lower() in ("true", "1", "t")
 
-# 檢查必備憑證
+# 檢查必備 LINE 憑證
 if not CHANNEL_SECRET or not CHANNEL_ACCESS_TOKEN:
     logger.error("請確認 .env 檔案中已設定 LINE_CHANNEL_SECRET 與 LINE_CHANNEL_ACCESS_TOKEN！")
-    sys.exit(1)
-
-if not GEMINI_API_KEY:
-    logger.error("請確認 .env 檔案中已設定 GEMINI_API_KEY！")
     sys.exit(1)
 
 # 初始化 Flask App 與 LINE SDK
@@ -57,10 +69,28 @@ app = Flask(__name__)
 configuration = Configuration(access_token=CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(CHANNEL_SECRET)
 
-# 初始化 Google Gemini Client
-ai_client = genai.Client(api_key=GEMINI_API_KEY)
+# 初始化 OpenCode / 本地模型 Client (OpenAI 兼容規範)
+opencode_client = None
+if OPENCODE_API_KEY or OPENCODE_BASE_URL:
+    try:
+        opencode_client = OpenAI(
+            api_key=OPENCODE_API_KEY or "dummy-key",
+            base_url=OPENCODE_BASE_URL
+        )
+        logger.info(f"[*] OpenCode / 本地模型 Client 初始化成功 (Endpoint: {OPENCODE_BASE_URL}, Model: {OPENCODE_MODEL_NAME})")
+    except Exception as e:
+        logger.warning(f"[!] OpenCode Client 初始化失敗: {e}")
+
+# 初始化 Google Gemini Client (用於 Vision 多模態及備援)
+ai_client = None
 PRIMARY_MODEL = "gemini-3.5-flash-lite"
 BACKUP_MODEL = "gemini-3.8-flash"
+if GEMINI_API_KEY:
+    try:
+        ai_client = genai.Client(api_key=GEMINI_API_KEY)
+        logger.info("[*] Google Gemini Client 初始化成功 (Vision & Backup 引擎備妥)")
+    except Exception as e:
+        logger.warning(f"[!] Gemini Client 初始化失敗: {e}")
 
 
 def get_current_taipei_time_str():
@@ -94,21 +124,28 @@ def build_system_instruction():
    • 若詢問台北捷運周邊咖啡廳、餐廳或景點，必須僅推薦「真實存在、具體知名」的實體店家。
    • 回覆必須包含：真實店名、捷運站別與出口、特色亮點、實用資訊（如有無插座 🔌、大約價位）。
    • 嚴格禁止憑空捏造或杜撰虛假店名、地址或不存在的捷運出口！若特定冷門區域資料不確定，請如實說明。
-2. 【文字與英文地道潤飾】：
+2. 【即時網路檢索資料處理】：
+   • 當提示詞中附帶「即時網路檢索真實資料」時，請務必嚴格依據檢索內容作答，並提煉重點，切勿脫離檢索事實。
+3. 【文字與英文地道潤飾】：
    • 使用者提供英文句子時，提供「商務正式版」與「自然口語版」兩種修訂，並以 1~2 點簡明說明修訂原因。
-3. 【多模態影像理解與外文翻譯】：
+4. 【多模態影像理解與外文翻譯】：
    • 若為圖片輸入，先指出主旨，接著提取圖中關鍵文字，外文請自動翻譯為繁體中文，最後條列重點。
 """
 
 
-# 使用者多輪對話記憶快取 (以 user_id 為 Key 儲存 Chat Session)
+# 使用者多輪對話歷史紀錄
+# OpenCode 使用: user_chat_histories[user_id] = [{"role": "user"|"assistant", "content": ...}]
+user_chat_histories = {}
+# Gemini Session 快取: user_chat_sessions[user_id] = GeminiChat
 user_chat_sessions = {}
 
 
-def get_or_create_chat(user_id: str):
-    """取得或建立使用者的 Gemini 多輪對話實例"""
+def get_or_create_gemini_chat(user_id: str):
+    """取得或建立使用者的 Gemini 多輪對話實例 (備援用)"""
+    if not ai_client:
+        return None
     if user_id not in user_chat_sessions:
-        logger.info(f"為使用者 {user_id} 建立新的對話 Session")
+        logger.info(f"為使用者 {user_id} 建立新的 Gemini 對話 Session")
         chat = ai_client.chats.create(
             model=PRIMARY_MODEL,
             config=types.GenerateContentConfig(
@@ -120,12 +157,73 @@ def get_or_create_chat(user_id: str):
     return user_chat_sessions[user_id]
 
 
+def generate_opencode_response(user_id: str, user_text: str, search_context: str = "") -> str:
+    """調用 OpenCode / 本地開源模型生成回覆 (結合即時搜尋 Context)"""
+    if not opencode_client:
+        raise RuntimeError("OpenCode 客戶端未建立或未設定 API Key/Base URL")
+
+    if user_id not in user_chat_histories:
+        user_chat_histories[user_id] = []
+
+    history = user_chat_histories[user_id]
+
+    # 組裝 Prompt (若有 Web Search 檢索內容則注入 RAG 上下文)
+    prompt_for_model = user_text
+    if search_context:
+        prompt_for_model = f"""{search_context}
+
+使用者提問：{user_text}
+
+請嚴格根據上方提供的即時網路檢索真實資料回答，直奔重點結論，切勿編造！"""
+
+    # 組裝對話歷史訊息
+    messages = [{"role": "system", "content": build_system_instruction()}]
+    # 加入最近對話歷史
+    messages.extend(history)
+    # 加入當前問題
+    messages.append({"role": "user", "content": prompt_for_model})
+
+    logger.info(f"[OpenCode] 發送請求至模型 {OPENCODE_MODEL_NAME}...")
+    response = opencode_client.chat.completions.create(
+        model=OPENCODE_MODEL_NAME,
+        messages=messages,
+        temperature=0.5,
+        max_tokens=1500
+    )
+
+    ai_reply = response.choices[0].message.content.strip()
+
+    # 更新記憶歷史 (保持最近 8 回合滑動視窗)
+    history.append({"role": "user", "content": user_text})
+    history.append({"role": "assistant", "content": ai_reply})
+    if len(history) > 16:
+        user_chat_histories[user_id] = history[-16:]
+
+    return ai_reply
+
+
+def send_loading_animation(user_id: str, loading_seconds: int = 15):
+    """向 LINE 用戶端發送正在輸入中的動態提示 (爭取 AI 聯網與推理時間)"""
+    try:
+        with ApiClient(configuration) as api_cli:
+            line_bot_api = MessagingApi(api_cli)
+            line_bot_api.show_loading_animation(
+                ShowLoadingAnimationRequest(
+                    chat_id=user_id,
+                    loading_seconds=loading_seconds
+                )
+            )
+    except Exception as e:
+        logger.debug(f"發送 Loading 動畫略過: {e}")
+
+
 def build_quick_reply():
-    """建立快速回覆按鈕 (Quick Reply) - 優化引導性"""
+    """建立快速回覆按鈕 (Quick Reply) - 優化引導性與即時搜尋"""
     return QuickReply(
         items=[
-            QuickReplyItem(action=MessageAction(label="💡 今日靈感", text="請給我一個今日生活或工作的小靈感！")),
+            QuickReplyItem(action=MessageAction(label="🔍 即時新聞速查", text="搜尋 台灣今天最重要的 3 則頭條新聞")),
             QuickReplyItem(action=MessageAction(label="☕ 捷運咖啡廳", text="推薦台北捷運周邊真實平價工作咖啡廳（含插座與站名）")),
+            QuickReplyItem(action=MessageAction(label="💡 今日靈感", text="請給我一個今日生活或工作的小靈感！")),
             QuickReplyItem(action=MessageAction(label="📝 英文潤飾", text="請幫我潤飾英文句子：[請在此替換你的英文句子]")),
             QuickReplyItem(action=MessageAction(label="🧹 清除記憶", text="/reset")),
         ]
@@ -134,15 +232,19 @@ def build_quick_reply():
 
 @app.route("/", methods=["GET"])
 def index():
-    """健康檢查端點"""
+    """健康檢查端點 - 顯示當前運行的模型架構與狀態"""
+    active_engine = "OpenCode / Local Model" if (AI_PROVIDER == "opencode" and opencode_client) else f"Google Gemini ({PRIMARY_MODEL})"
     return {
         "status": "online",
-        "service": "OmniLine-AI Assistant V2 (課後改善版)",
-        "ai_engine": f"Google Gemini ({PRIMARY_MODEL})",
+        "service": "OmniLine-AI Assistant V3 (OpenCode + Web Search 升級版)",
+        "active_ai_engine": active_engine,
+        "opencode_endpoint": OPENCODE_BASE_URL if opencode_client else "Not Configured",
+        "opencode_model": OPENCODE_MODEL_NAME if opencode_client else "N/A",
+        "web_search_enabled": True,
         "current_time": get_current_taipei_time_str(),
-        "active_sessions": len(user_chat_sessions),
-        "vision_enabled": True,
-        "message": "LINE Webhook 伺服器正常運作中！V2 改善版功能已上線！"
+        "active_user_sessions": max(len(user_chat_histories), len(user_chat_sessions)),
+        "vision_enabled": ai_client is not None,
+        "message": "LINE Webhook 伺服器正常運作中！OpenCode 與 Web Search 聯網防幻覺功能已就緒！"
     }, 200
 
 
@@ -170,7 +272,7 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessageContent)
 def handle_text_message(event: MessageEvent):
-    """處理文字訊息事件，串接 Gemini 產生智慧解答"""
+    """處理文字訊息事件：結合 Web Search 檢索與 OpenCode / 本地模型推理"""
     user_text = event.message.text.strip()
     user_id = event.source.user_id
     reply_token = event.reply_token
@@ -179,10 +281,11 @@ def handle_text_message(event: MessageEvent):
 
     # 特殊指令：重置對話記憶
     if user_text.lower() in ("/reset", "/clear", "重置", "清除記憶", "清除對話"):
+        user_chat_histories.pop(user_id, None)
         user_chat_sessions.pop(user_id, None)
         reply_msg = "對話記憶已清空。請問有什麼我可以協助您的？"
-        with ApiClient(configuration) as api_client:
-            line_bot_api = MessagingApi(api_client)
+        with ApiClient(configuration) as api_cli:
+            line_bot_api = MessagingApi(api_cli)
             line_bot_api.reply_message(
                 ReplyMessageRequest(
                     reply_token=reply_token,
@@ -194,8 +297,8 @@ def handle_text_message(event: MessageEvent):
     # Quick Reply 引導詞防呆處理
     if user_text == "請幫我潤飾英文句子：[請在此替換你的英文句子]":
         hint_msg = "請在冒號後面輸入你想修改的英文句子再發送給我喔！例如：\n\n請幫我潤飾英文句子：I want to know if you can come to the meeting tomorrow."
-        with ApiClient(configuration) as api_client:
-            line_bot_api = MessagingApi(api_client)
+        with ApiClient(configuration) as api_cli:
+            line_bot_api = MessagingApi(api_cli)
             line_bot_api.reply_message(
                 ReplyMessageRequest(
                     reply_token=reply_token,
@@ -204,32 +307,86 @@ def handle_text_message(event: MessageEvent):
             )
         return
 
-    # 呼叫 Gemini AI 進行多輪對話推理
+    # 1. 發送 LINE 輸入中等待動畫 (改善連線與搜尋體驗)
+    send_loading_animation(user_id, loading_seconds=15)
+
+    # 2. 意圖檢測與即時網路檢索 (Web Search)
+    need_search, search_query = should_trigger_search(user_text)
+    search_context = ""
+    source_urls = []
+
+    if need_search:
+        logger.info(f"[Web Search] 觸發網路檢索: '{search_query}'")
+        search_results = search_engine.search(search_query, max_results=3)
+        if search_results:
+            search_context = format_search_context(search_results)
+            source_urls = [item["url"] for item in search_results if item.get("url")]
+            logger.info(f"[Web Search] 檢索完成，獲取 {len(search_results)} 筆真實參考資訊")
+
+    # 3. 呼叫核心 AI 模型進行推理 (優先 OpenCode，失敗自動降級 Gemini)
     ai_reply_text = ""
-    try:
-        chat = get_or_create_chat(user_id)
-        response = chat.send_message(user_text)
-        ai_reply_text = response.text.strip()
-    except Exception as e:
-        logger.error(f"Gemini 生成失敗，嘗試備援模型: {e}")
+    used_engine = "OpenCode"
+
+    # 嘗試調用 OpenCode / 本地模型 (若有設定金鑰或為本機端點)
+    is_local = OPENCODE_BASE_URL and ("localhost" in OPENCODE_BASE_URL or "127.0.0.1" in OPENCODE_BASE_URL)
+    can_use_opencode = bool(OPENCODE_API_KEY) or is_local
+
+    if AI_PROVIDER == "opencode" and opencode_client and can_use_opencode:
         try:
-            backup_res = ai_client.models.generate_content(
-                model=BACKUP_MODEL,
-                contents=user_text,
-                config=types.GenerateContentConfig(system_instruction=build_system_instruction())
-            )
-            ai_reply_text = backup_res.text.strip()
-        except Exception as err2:
-            logger.error(f"備援模型亦失敗: {err2}")
-            ai_reply_text = "目前 AI 運算量較大，請稍後再試一次，或輸入「/reset」重整記憶。"
+            ai_reply_text = generate_opencode_response(user_id, user_text, search_context)
+        except Exception as e:
+            logger.error(f"OpenCode 調用失敗 ({e})，啟動 Gemini 備援機制...")
+            used_engine = "Gemini Backup"
+
+    # 若未啟用 OpenCode 或 OpenCode 調用失敗，使用 Gemini 備援
+    if not ai_reply_text and ai_client:
+        try:
+            prompt_input = user_text
+            if search_context:
+                prompt_input = f"{search_context}\n\n使用者提問：{user_text}\n\n請依據搜尋結果直接回答："
+
+            # 嘗試使用 Gemini 多輪 Session 或直接生成
+            chat = get_or_create_gemini_chat(user_id)
+            if chat and not search_context:
+                response = chat.send_message(prompt_input)
+                ai_reply_text = response.text.strip()
+            else:
+                res = ai_client.models.generate_content(
+                    model=PRIMARY_MODEL,
+                    contents=prompt_input,
+                    config=types.GenerateContentConfig(
+                        system_instruction=build_system_instruction(),
+                        temperature=0.5
+                    )
+                )
+                ai_reply_text = res.text.strip()
+        except Exception as gemini_err:
+            logger.error(f"Gemini 備援亦失敗: {gemini_err}")
+            try:
+                # 二度備援：使用 BACKUP_MODEL
+                backup_res = ai_client.models.generate_content(
+                    model=BACKUP_MODEL,
+                    contents=user_text,
+                    config=types.GenerateContentConfig(system_instruction=build_system_instruction())
+                )
+                ai_reply_text = backup_res.text.strip()
+            except Exception as final_err:
+                logger.error(f"所有 AI 引擎皆異常: {final_err}")
+                ai_reply_text = "目前 AI 運算量較大或網路不穩定，請稍後再試一次，或輸入「/reset」重整記憶。"
+
+    # 若有搜尋來源，在文末附加可信來源連結
+    if source_urls and len(ai_reply_text) > 0:
+        ai_reply_text += "\n\n🌐 即時資料來源："
+        for idx, u in enumerate(source_urls[:2], start=1):
+            ai_reply_text += f"\n• {u}"
 
     # LINE 單則訊息上限為 5000 字元防呆截斷
     if len(ai_reply_text) > 4900:
         ai_reply_text = ai_reply_text[:4900] + "\n...(回覆文字過長已自動節錄)"
 
-    # 回傳給 LINE 使用者，並附帶 Quick Reply 按鈕
-    with ApiClient(configuration) as api_client:
-        line_bot_api = MessagingApi(api_client)
+    # 4. 回傳給 LINE 使用者，並附帶 Quick Reply 按鈕
+    with ApiClient(configuration) as api_cli:
+        line_bot_api = MessagingApi(api_cli)
         line_bot_api.reply_message(
             ReplyMessageRequest(
                 reply_token=reply_token,
@@ -240,24 +397,27 @@ def handle_text_message(event: MessageEvent):
 
 @handler.add(MessageEvent, message=ImageMessageContent)
 def handle_image_message(event: MessageEvent):
-    """處理圖片訊息事件，使用 Gemini Vision 進行多模態辨識與翻譯"""
+    """處理圖片訊息事件：維持 V2 原有 Gemini Vision 多模態辨識與翻譯邏輯"""
     user_id = event.source.user_id
     reply_token = event.reply_token
     message_id = event.message.id
 
     logger.info(f"[收到圖片] 使用者 ({user_id}): message_id={message_id}")
 
+    # 發送 Loading 動畫提示
+    send_loading_animation(user_id, loading_seconds=15)
+
     # 1. 透過 LINE SDK 下載圖片二進位資料
     image_bytes = None
     try:
-        with ApiClient(configuration) as api_client:
-            blob_api = MessagingApiBlob(api_client)
+        with ApiClient(configuration) as api_cli:
+            blob_api = MessagingApiBlob(api_cli)
             image_bytes = blob_api.get_message_content(message_id)
     except Exception as e:
         logger.error(f"下載圖片失敗: {e}")
         reply_error = "圖片下載失敗，請稍後再試一次！"
-        with ApiClient(configuration) as api_client:
-            line_bot_api = MessagingApi(api_client)
+        with ApiClient(configuration) as api_cli:
+            line_bot_api = MessagingApi(api_cli)
             line_bot_api.reply_message(
                 ReplyMessageRequest(
                     reply_token=reply_token,
@@ -267,6 +427,18 @@ def handle_image_message(event: MessageEvent):
         return
 
     # 2. 構建 Gemini Vision 多模態 Prompt
+    if not ai_client:
+        reply_error = "目前伺服器尚未配置 Vision 多模態模型金鑰，無法分析圖片。"
+        with ApiClient(configuration) as api_cli:
+            line_bot_api = MessagingApi(api_cli)
+            line_bot_api.reply_message(
+                ReplyMessageRequest(
+                    reply_token=reply_token,
+                    messages=[TextMessage(text=reply_error, quick_reply=build_quick_reply())]
+                )
+            )
+        return
+
     image_part = types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg")
     vision_prompt = f"""
 當前精準時間：{get_current_taipei_time_str()}
@@ -311,8 +483,8 @@ def handle_image_message(event: MessageEvent):
         ai_reply_text = ai_reply_text[:4900] + "\n...(回覆文字過長已自動節錄)"
 
     # 3. 回覆使用者解析與翻譯結果
-    with ApiClient(configuration) as api_client:
-        line_bot_api = MessagingApi(api_client)
+    with ApiClient(configuration) as api_cli:
+        line_bot_api = MessagingApi(api_cli)
         line_bot_api.reply_message(
             ReplyMessageRequest(
                 reply_token=reply_token,
@@ -322,5 +494,5 @@ def handle_image_message(event: MessageEvent):
 
 
 if __name__ == "__main__":
-    logger.info(f"[*] OmniLine-AI V2 (Gemini Vision 升級版) 伺服器啟動於 http://0.0.0.0:{PORT}")
+    logger.info(f"[*] OmniLine-AI V3 (OpenCode + Web Search 升級版) 啟動於 http://0.0.0.0:{PORT}")
     app.run(host="0.0.0.0", port=PORT, debug=DEBUG)
