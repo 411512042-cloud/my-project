@@ -16,7 +16,7 @@
 3. **下載專案檔案**：
    ```bash
    git clone [https://github.com/411512042-cloud/my-project.git](https://github.com/411512042-cloud/my-project.git)
-  ## 🛠️ 1. 怎麼跑 
+  ## 🛠️ 2. 怎麼跑 
 開啟 CMD 視窗並進入專案目錄：
 
 DOS
@@ -26,7 +26,7 @@ cd C:\Users\Administrator\my-project
 DOS
 python line_bot_lite.py
 依提示貼上 LINE 的 Channel access token 與 Channel secret 進行驗證。
-## 🛠️ 1. 我改了什麼 實測狀況
+## 🛠️ 3. 我改了什麼 實測狀況
 
 模型選用：使用 gemma4:e2b 輕量版本地模型。
 
